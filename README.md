@@ -10,7 +10,7 @@ VITE_GOOGLE_API_KEY=YOUR_GOOGLE_API_KEY_HERE
 
 ### Preview
 
-![Image0](https://github.com/demsr/banana/blob/master/images/img_00.png)
-![Image1](https://github.com/demsr/banana/blob/master/images/img_01.png)
-![Image2](https://github.com/demsr/banana/blob/master/images/img_02.png)
-![Image3](https://github.com/demsr/banana/blob/master/images/img_03.png)
+![Image0](https://github.com/demsr/banana/blob/main/images/img_00.png)
+![Image1](https://github.com/demsr/banana/blob/main/images/img_01.png)
+![Image2](https://github.com/demsr/banana/blob/main/images/img_02.png)
+![Image3](https://github.com/demsr/banana/blob/main/images/img_03.png)
