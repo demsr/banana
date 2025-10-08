@@ -1,6 +1,6 @@
 ## POC of graphical flow for editing images with google gemini
 
-IMPORTANT: This is unsafe code. Do not put this on the internet, it will leak you Google API KEY!
+IMPORTANT: This is unsafe code. Do not put this on the internet, it will leak your Google API KEY!
 
 You have been warned.
 
