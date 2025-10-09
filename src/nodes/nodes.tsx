@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Position,
   Handle,
@@ -70,9 +70,9 @@ export const AiNode = ({ data, id }: NodeProps<AiNode>) => {
     apiKey: import.meta.env.VITE_GOOGLE_API_KEY,
   });
 
-  const images = useNodesData(c.map((c) => c.source)).map(
-    (x) => x.data.image
-  ) as string[];
+  const images = useNodesData(c.map((c) => c.source))
+    .filter((x) => x.data.image != null)
+    .map((x) => x.data.image) as string[];
 
   const onGenerate = async () => {
     setGenerating(true);
@@ -101,29 +101,50 @@ export const AiNode = ({ data, id }: NodeProps<AiNode>) => {
       ],
     });
 
-    for (const part of response.candidates[0].content.parts) {
-      if (part.text) {
-        console.log(part.text);
-      } else if (part.inlineData) {
-        const imageData = part.inlineData.data;
+    if (
+      response.candidates &&
+      response.candidates?.length > 0 &&
+      response.candidates[0].content &&
+      response.candidates[0].content.parts
+    ) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.text) {
+          console.log(part.text);
+        } else if (part.inlineData) {
+          const imageData = part.inlineData.data;
 
-        const i = rawToBase64Mime(
-          imageData as string,
-          part.inlineData.mimeType
-        );
+          const i = rawToBase64Mime(
+            imageData as string,
+            part.inlineData.mimeType
+          );
 
-        updateNodeData(id, { image: i });
+          updateNodeData(id, { image: i });
+        }
       }
     }
 
     setGenerating(false);
   };
 
+  console.log(images);
+
+  if (images.length == 0)
+    return (
+      <div className=" border rounded-md overflow-hidden bg-white p-2">
+        <div>Waiting for previous node to have image</div>
+        <Handle type="target" position={Position.Left} />
+      </div>
+    );
+
   return (
-    <div className=" border rounded-md overflow-hidden">
+    <div className=" border rounded-md overflow-hidden bg-white">
       <div>
         {data.image ? (
-          <img className="w-[200px] h-[200px] object-cover" src={data.image} />
+          <img
+            alt=""
+            className="w-[200px] h-[200px] object-cover"
+            src={data.image}
+          />
         ) : generating ? (
           <div className="w-[200px] aspect-square animate-pulse bg-slate-400"></div>
         ) : (
@@ -135,7 +156,12 @@ export const AiNode = ({ data, id }: NodeProps<AiNode>) => {
               onChange={(e) => updateNodeData(id, { prompt: e.target.value })}
             />
 
-            <button onClick={onGenerate} className="bg-slate-300 rounded-md">
+            <button
+              type="button"
+              onClick={onGenerate}
+              className="bg-slate-300 rounded-md"
+              disabled={data.prompt.length == 0}
+            >
               Generate
             </button>
           </div>
@@ -143,7 +169,7 @@ export const AiNode = ({ data, id }: NodeProps<AiNode>) => {
       </div>
 
       <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
+      {data.image ? <Handle type="source" position={Position.Right} /> : null}
     </div>
   );
 };
@@ -153,24 +179,27 @@ type ImageNode = Node<{ image: string }, "image">;
 export const ImageNode = ({ data, id }: NodeProps<ImageNode>) => {
   const { updateNodeData } = useReactFlow();
 
-  const [preview, setPreview] = useState(null);
+  const onChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
+    (evt) => {
+      const f = evt.target.files ? Array.from(evt.target.files) : null;
 
-  const onChange = useCallback((evt) => {
-    const f = Array.from(evt.target.files);
+      if (f != null && f.length > 0) {
+        const reader = new FileReader();
 
-    const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result;
 
-    reader.onloadend = () => {
-      const base64String = reader.result;
+          updateNodeData(id, { image: base64String });
+        };
 
-      updateNodeData(id, { image: base64String });
-    };
-
-    reader.readAsDataURL(f[0]);
-  }, []);
+        reader.readAsDataURL(f[0]);
+      }
+    },
+    [id, updateNodeData]
+  );
 
   return (
-    <div className="border rounded-md overflow-hidden">
+    <div className="border rounded-md overflow-hidden bg-white shadow-2xl shadow-fuchsia-400  shadow">
       <div>
         {data.image ? (
           <img alt="preview" className="w-[200px]" src={data.image} />
